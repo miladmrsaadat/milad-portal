@@ -1,0 +1,158 @@
+/* ==========================================================
+   Crew Orbit — Milad Saadat portal hero component
+   Pixel · گرافیک و تبلیغات — vanilla CSS, no framework
+   All rules are scoped under .crew-orbit
+   ========================================================== */
+
+.crew-orbit{
+  --co-bg:#05060e;          /* deep navy */
+  --co-bg-2:#0b1230;
+  --co-gold:#2f7bff;        /* brand gold */
+  --co-gold-hi:#6ea8ff;
+  --co-gold-soft:rgba(47,123,255,.28);
+  --co-ink:#e8ecff;         /* label text */
+  --co-ink-dim:#8f9bc4;     /* role text */
+  --co-glow:rgba(255,46,77,.5);
+  --co-max:860px;           /* max stage size */
+  --co-avatar:15.5cqw;      /* avatar size relative to stage */
+  --co-logo:34cqw;          /* centre logo size */
+  --co-font:"Vazirmatn",Tahoma,sans-serif;
+
+  position:relative; display:grid; place-items:center;
+  width:100%; padding:clamp(16px,4vw,48px) 0;
+  font-family:var(--co-font); color:var(--co-ink);
+  isolation:isolate; overflow:hidden;
+}
+.crew-orbit *{box-sizing:border-box}
+
+/* ---------- stage ---------- */
+.co-stage{
+  position:relative; width:min(var(--co-max),92vw,82vh); aspect-ratio:1/1;
+  container-type:inline-size;
+}
+.co-bg{position:absolute; inset:-8%; pointer-events:none; z-index:0}
+.co-bg::before{ /* nebula light */
+  content:""; position:absolute; inset:0; border-radius:50%;
+  background:
+    radial-gradient(closest-side, rgba(255,210,122,.20), rgba(217,164,65,.07) 38%, transparent 70%),
+    radial-gradient(60% 45% at 30% 25%, rgba(70,90,200,.16), transparent 70%),
+    radial-gradient(55% 45% at 75% 80%, rgba(120,70,200,.12), transparent 70%);
+  filter:blur(2px);
+}
+.co-stars{position:absolute; inset:0; width:100%; height:100%}
+.co-stars circle{fill:#fff; animation:co-twinkle var(--d,4s) ease-in-out var(--dl,0s) infinite}
+@keyframes co-twinkle{0%,100%{opacity:.15}50%{opacity:.85}}
+
+/* ---------- rings (svg) ---------- */
+.co-rings{position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none; overflow:visible}
+.co-ring-orbit{fill:none; stroke:url(#coGold); stroke-width:.35; opacity:.75}
+.co-ring-dash{fill:none; stroke:var(--co-gold); stroke-width:.25; stroke-dasharray:.6 2.2; opacity:.45}
+.co-ring-ticks{fill:none; stroke:var(--co-gold); stroke-width:1.4; stroke-dasharray:.18 1.38; opacity:.35}
+.co-ring-inner{fill:none; stroke:rgba(255,210,122,.25); stroke-width:.2}
+.co-spin-cw {transform-origin:50% 50%; animation:co-rot 120s linear infinite}
+.co-spin-ccw{transform-origin:50% 50%; animation:co-rot 160s linear infinite reverse}
+@keyframes co-rot{to{transform:rotate(360deg)}}
+.co-comet{fill:none; stroke:url(#coComet); stroke-width:.9; stroke-linecap:round; opacity:.9}
+
+/* ---------- centre logo ---------- */
+.co-core{
+  position:absolute; left:50%; top:50%; width:var(--co-logo); aspect-ratio:1;
+  transform:translate(-50%,-50%); z-index:2; border-radius:50%;
+}
+.co-core::before{ /* soft light behind logo */
+  content:""; position:absolute; inset:-38%; border-radius:50%;
+  background:radial-gradient(closest-side, rgba(255,214,140,.42), rgba(217,164,65,.14) 45%, transparent 72%);
+  animation:co-breathe 6s ease-in-out infinite; z-index:-1;
+}
+.co-core::after{ /* thin halo */
+  content:""; position:absolute; inset:-5%; border-radius:50%;
+  background:conic-gradient(from 0deg, transparent 0 18%, rgba(255,210,122,.75) 25%, transparent 33% 68%, rgba(255,210,122,.5) 75%, transparent 83%);
+  -webkit-mask:radial-gradient(closest-side, transparent 95%, #000 96% 99%, transparent 100%);
+          mask:radial-gradient(closest-side, transparent 95%, #000 96% 99%, transparent 100%);
+  animation:co-rot 14s linear infinite;
+}
+.co-core img{width:100%; height:100%; display:block; border-radius:50%;
+  filter:drop-shadow(0 0 2.2cqw rgba(0,0,0,.65)) drop-shadow(0 0 1cqw rgba(217,164,65,.35))}
+@keyframes co-breathe{0%,100%{opacity:.75; transform:scale(1)}50%{opacity:1; transform:scale(1.06)}}
+
+/* ---------- avatars ---------- */
+.co-ring{position:absolute; inset:0; z-index:3}
+.co-bot{
+  position:absolute; left:50%; top:50%; width:var(--co-avatar);
+  margin-left:calc(var(--co-avatar) / -2); margin-top:calc(var(--co-avatar) / -2);
+  text-decoration:none; color:inherit; outline:none;
+  will-change:transform; -webkit-tap-highlight-color:transparent;
+}
+.co-bot-inner{
+  display:flex; flex-direction:column; align-items:center;
+  transition:transform .35s cubic-bezier(.2,.8,.2,1), filter .35s;
+}
+.co-disc{
+  position:relative; width:100%; aspect-ratio:1; border-radius:50%;
+  background:radial-gradient(circle at 50% 38%, #1F2A52 0%, #121A33 55%, #0A0E1E 100%);
+  box-shadow:inset 0 0 0 1px rgba(217,164,65,.45), inset 0 -1.2cqw 2cqw rgba(0,0,0,.45), 0 1cqw 2.4cqw rgba(0,0,0,.55);
+  transition:box-shadow .35s;
+}
+.co-disc::after{ /* glass highlight */
+  content:""; position:absolute; inset:0; border-radius:50%;
+  background:linear-gradient(160deg, rgba(255,255,255,.10), transparent 40%);
+  pointer-events:none;
+}
+/* figure: head breaks out of the top of the disc, body is clipped by the circle */
+.co-fig{
+  position:absolute; left:0; right:0; bottom:0; top:-20%; pointer-events:none;
+  -webkit-mask:linear-gradient(#000,#000) top/100% 58.4% no-repeat, radial-gradient(50% 41.667% at 50% 58.333%, #000 99%, transparent 100%);
+          mask:linear-gradient(#000,#000) top/100% 58.4% no-repeat, radial-gradient(50% 41.667% at 50% 58.333%, #000 99%, transparent 100%);
+}
+.co-fig img{position:absolute; left:-6%; width:112%; height:auto; bottom:-3%; display:block;
+  filter:drop-shadow(0 .4cqw .8cqw rgba(0,0,0,.5))}
+.co-label{
+  margin-top:.8cqw; text-align:center; line-height:1.25; white-space:nowrap;
+  padding:.35em .9em .4em; border-radius:999px;
+  background:rgba(11,15,32,.72); box-shadow:inset 0 0 0 1px rgba(217,164,65,.18);
+  -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+  text-shadow:0 1px 6px rgba(0,0,0,.8);
+}
+.co-name{display:block; font-weight:700; font-size:clamp(11px,2.25cqw,17px); color:var(--co-ink)}
+.co-role{display:block; font-weight:400; font-size:clamp(9px,1.6cqw,12.5px); color:var(--co-ink-dim); margin-top:.15em}
+
+/* hover / focus = gentle lift + glow */
+.co-bot:hover .co-bot-inner, .co-bot:focus-visible .co-bot-inner{transform:translateY(-1.1cqw) scale(1.07)}
+.co-bot:hover .co-disc, .co-bot:focus-visible .co-disc{
+  box-shadow:inset 0 0 0 1.5px var(--co-gold-hi), 0 0 2.2cqw var(--co-glow), 0 1.4cqw 2.8cqw rgba(0,0,0,.55);
+}
+.co-bot:hover .co-name, .co-bot:focus-visible .co-name{color:var(--co-gold-hi)}
+.co-bot:focus-visible .co-disc{outline:2px solid var(--co-gold-hi); outline-offset:4px}
+
+/* ---------- launch (click) state ---------- */
+.crew-orbit.is-launching .co-bot:not(.is-chosen) .co-bot-inner{filter:brightness(.55) saturate(.7); transition-duration:.6s}
+.crew-orbit.is-launching .co-bot.is-chosen{z-index:5}
+.crew-orbit.is-launching .co-bot.is-chosen .co-bot-inner{transform:scale(1.32); transition:transform .9s cubic-bezier(.3,1.4,.4,1)}
+.crew-orbit.is-launching .co-bot.is-chosen .co-disc{
+  box-shadow:inset 0 0 0 2px var(--co-gold-hi), 0 0 3.5cqw 1cqw var(--co-glow), 0 0 8cqw rgba(255,200,87,.35);
+}
+.crew-orbit.is-launching .co-ring-orbit{opacity:1; stroke-width:.6; transition:all .8s}
+.crew-orbit.is-launching .co-core::before{animation:co-flare 1.4s ease-in forwards}
+@keyframes co-flare{to{opacity:1; transform:scale(1.35)}}
+.co-flash{
+  position:absolute; inset:0; z-index:10; pointer-events:none; opacity:0;
+  background:radial-gradient(circle at var(--fx,50%) var(--fy,50%), rgba(255,226,160,.95), rgba(217,164,65,.35) 18%, rgba(11,15,32,.97) 55%);
+}
+.crew-orbit.is-arriving .co-flash{animation:co-flash .38s ease-out forwards}
+@keyframes co-flash{0%{opacity:0}100%{opacity:1}}
+
+/* ---------- responsive ---------- */
+@media (max-width:560px){
+  .crew-orbit{--co-avatar:17cqw; --co-logo:36cqw}
+  .co-stage{width:min(96vw,84vh)}
+  .co-label{padding:.2em .7em .25em}
+  .co-role{display:none}
+}
+@media (max-width:360px){ .crew-orbit{--co-avatar:16cqw} .co-name{font-size:10px} }
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion:reduce){
+  .co-spin-cw,.co-spin-ccw,.co-core::after,.co-core::before,.co-stars circle{animation:none}
+  .co-bot-inner{transition:none}
+}
+.co-sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}

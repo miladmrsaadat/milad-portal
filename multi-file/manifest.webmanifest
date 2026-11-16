@@ -1,0 +1,16 @@
+{
+  "name": "پورتال میلاد سعادت — مدیریت پروژه‌ها و امور روزانه",
+  "short_name": "Milad Portal",
+  "description": "Company Executive Management, Personal AI Ideas & Projects, Finance and Daily Command Center — 100% local.",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "./index.html#/daily",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#02030a",
+  "theme_color": "#0b0a24",
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

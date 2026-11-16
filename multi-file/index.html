@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<script>
+/* BOOT GUARD — plain ES5, inline, runs before everything else.
+   1) safe storage (localStorage may throw on content:// / blocked cookies / private modes → falls back to memory)
+   2) ASSET() helper (inlined data-URIs in the single-file build, assets/… in the multi-file build)
+   3) visible error screen instead of a blank page */
+(function () {
+  var w = window, mem = {}, failed = {}, ok = false;
+  try { w.localStorage.setItem('__probe', '1'); w.localStorage.removeItem('__probe'); ok = true; } catch (e) { ok = false; }
+  w.STORE = {
+    persistent: ok,
+    getItem: function (k) { if (ok && !failed[k]) { try { return w.localStorage.getItem(k); } catch (e) { } } return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; },
+    setItem: function (k, v) { v = String(v); if (ok) { try { w.localStorage.setItem(k, v); delete failed[k]; return; } catch (e) { failed[k] = 1; } } mem[k] = v; },
+    removeItem: function (k) { delete mem[k]; delete failed[k]; if (ok) { try { w.localStorage.removeItem(k); } catch (e) { } } },
+    keys: function () {
+      var ks = [], seen = {};
+      function add(k) { if (k && !seen[k]) { seen[k] = 1; ks.push(k); } }
+      for (var k in mem) if (Object.prototype.hasOwnProperty.call(mem, k)) add(k);
+      if (ok) { try { for (var i = 0; i < w.localStorage.length; i++) add(w.localStorage.key(i)); } catch (e) { } }
+      return ks;
+    }
+  };
+  w.ASSET = function (n) { return (w.__ASSETS && w.__ASSETS[n]) || 'assets/' + n; };
+  var KEYS = ['mss_portal_v1', 'mss_checklist_v1', 'mss_finance_v1', 'mss_daily_v1', 'mss_agents_v1', 'mss_extras_v1', 'mss_muted', 'mss_finance_pin'];
+  var shown = false;
+  function el(tag, css, html) { var e = document.createElement(tag); if (css) e.style.cssText = css; if (html != null) e.innerHTML = html; return e; }
+  function esc(s) { return String(s).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
+  function show(msg, detail, hard) {
+    var root = document.body || document.documentElement; if (!root) return;
+    if (hard) { if (shown) return; shown = true; }
+    var box = el('div', hard
+      ? 'position:fixed;inset:0;z-index:2147483647;background:#070b1f;color:#e9edff;display:flex;align-items:center;justify-content:center;padding:18px;font:16px/1.9 Tahoma,Vazirmatn,Arial,sans-serif;direction:rtl;text-align:right;overflow:auto'
+      : 'position:fixed;left:8px;right:8px;bottom:8px;z-index:2147483647;background:#2a1020;color:#ffd9e0;border:1px solid #ff4d6d;border-radius:12px;padding:10px 14px;font:14px/1.7 Tahoma,Vazirmatn,Arial,sans-serif;direction:rtl;text-align:right;box-shadow:0 8px 30px rgba(0,0,0,.5)');
+    var btn = 'cursor:pointer;border:0;border-radius:10px;padding:10px 16px;margin:4px;font:inherit;color:#0b1030;background:linear-gradient(90deg,#ffd36b,#ff9d4d)';
+    var btn2 = 'cursor:pointer;border:1px solid #6d7bd6;border-radius:10px;padding:10px 16px;margin:4px;font:inherit;color:#e9edff;background:transparent';
+    box.innerHTML = hard
+      ? '<div style="max-width:560px;width:100%;border:1px solid #3b4aa0;border-radius:18px;padding:22px;background:#0d1330"><div style="font-size:22px;font-weight:700;margin-bottom:6px">⚠️ ' + msg + '</div>' +
+        '<div style="opacity:.85">پورتال کامل بارگذاری نشد. معمولاً با یکی از این کارها درست می‌شود:<br>۱) فایل zip را ابتدا <b>Extract</b> کنید (داخل zip یا پیش‌نمایش باز نکنید).<br>۲) فایل <b>Portal-Milad.html</b> را در <b>Chrome</b> باز کنید.<br>۳) اگر داده‌های ذخیره‌شده خراب شده‌اند، دکمهٔ «پاک‌کردن داده‌ها» را بزنید.</div>' +
+        '<div style="direction:ltr;text-align:left;opacity:.6;font:12px/1.5 monospace;margin:10px 0;word-break:break-word">' + esc(detail || '') + '</div><div id="bg-btns"></div></div>'
+      : '<div style="display:flex;gap:10px;align-items:center"><div style="flex:1">⚠️ ' + msg + '<div style="direction:ltr;text-align:left;opacity:.6;font:11px/1.4 monospace;word-break:break-word">' + esc(detail || '') + '</div></div><div id="bg-btns"></div></div>';
+    root.appendChild(box);
+    var bs = box.querySelector('#bg-btns');
+    function add(t, css, fn) { var b = el('button', css, t); b.onclick = fn; bs.appendChild(b); }
+    if (hard) {
+      add('بارگذاری دوباره', btn, function () { location.reload(); });
+      add('پاک‌کردن داده‌های ذخیره‌شده و شروع دوباره', btn2, function () { for (var i = 0; i < KEYS.length; i++) w.STORE.removeItem(KEYS[i]); try { location.hash = ''; } catch (e) { } location.reload(); });
+    } else add('✕', btn2, function () { box.parentNode.removeChild(box); });
+  }
+  w.__bootShow = show;
+  w.addEventListener('error', function (e) {
+    var t = e.target;
+    if (t && t !== w && t.tagName) { if (t.tagName === 'SCRIPT' || (t.tagName === 'LINK' && t.rel === 'stylesheet')) show('فایل‌های کنار صفحه پیدا نشدند', String(t.src || t.href), true); return; }
+    var m = e.message || ''; if (/ResizeObserver/.test(m)) return;
+    show(w.__booted ? 'یک خطای غیرمنتظره رخ داد (برنامه ادامه می‌دهد)' : 'خطا در راه‌اندازی پورتال', m + (e.filename ? ' @ ' + String(e.filename).split('/').pop() + ':' + e.lineno : ''), !w.__booted);
+  }, true);
+  w.addEventListener('unhandledrejection', function (e) { try { console.warn('unhandled rejection', e.reason); } catch (x) { } });
+  if (typeof Promise === 'undefined' || !Object.assign || !w.Intl || !Array.prototype.includes) { document.addEventListener('DOMContentLoaded', function () { show('مرورگر شما قدیمی است', 'لطفاً Chrome یا Edge را به‌روز کنید', true); }); }
+  w.addEventListener('load', function () { setTimeout(function () { if (!w.__booted) show('پورتال بالا نیامد', 'boot watchdog: app did not start', true); }, 2500); });
+  document.addEventListener('DOMContentLoaded', function () {
+    if (!ok) { var n = el('div', 'position:fixed;top:8px;left:8px;right:8px;z-index:2147483000;background:#3a2c08;color:#ffe9a8;border:1px solid #ffc107;border-radius:12px;padding:8px 12px;font:13px/1.7 Tahoma,Vazirmatn,Arial,sans-serif;direction:rtl;text-align:right;pointer-events:none', 'ℹ️ ذخیره‌سازی مرورگر در این حالت فعال نیست؛ پورتال کار می‌کند ولی تغییرات فقط تا بستن صفحه می‌مانند. (برای ذخیرهٔ دائمی فایل را از پوشهٔ Extract‌شده در Chrome باز کنید.)'); document.body.appendChild(n); setTimeout(function () { if (n.parentNode) n.parentNode.removeChild(n); }, 9000); }
+  });
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مدیریت پروژه‌ها و امور اجرایی | Milad Saadat</title>
+<meta name="description" content="Company Executive Management, as Well as Personal Artificial Intelligence Ideas And Projects">
+<link rel="icon" type="image/png" href="assets/logo-milad-v2-128.png">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/crew-orbit.css">
+<!--PWA--><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#0b0a24"><link rel="apple-touch-icon" href="assets/icons/icon-192.png"><!--/PWA-->
+</head>
+<body class="route-landing">
+<noscript><div style="padding:24px;color:#fff;background:#300;text-align:center;font:18px Tahoma">برای اجرای پورتال باید JavaScript فعال باشد.</div></noscript>
+
+<!-- Night sky layers -->
+<div id="sky-base" aria-hidden="true"></div>
+<canvas id="sky" aria-hidden="true"></canvas>
+<div id="aurora" aria-hidden="true"></div>
+
+<!-- Global controls -->
+<div id="global-ctrl">
+  <button class="gc-btn" id="btn-sound" title="صدا روشن / خاموش" aria-label="صدا"></button>
+  <button class="gc-btn" id="btn-menu" title="تنظیمات و پشتیبان" aria-label="تنظیمات">
+    <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Zm7.4-2.5.1-1-.1-1 2.1-1.6-2-3.5-2.5 1a7.6 7.6 0 0 0-1.7-1L15 3.3h-4l-.4 2.6c-.6.3-1.2.6-1.7 1l-2.5-1-2 3.5L6.5 11l-.1 1 .1 1-2.1 1.6 2 3.5 2.5-1c.5.4 1.1.7 1.7 1l.4 2.6h4l.4-2.6c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.5-2.1-1.6Z"/></svg>
+  </button>
+  <div id="menu" class="glass hidden">
+    <button data-act="install" class="hidden">📲 نصب پورتال روی دستگاه</button>
+    <button data-act="export">⬇️ خروجی پشتیبان (JSON)</button>
+    <button data-act="export-share">📤 خروجی قابل اشتراک (بدون داده مالی)</button>
+    <button data-act="export-fin">💾 خروجی جداگانه فقط مالی</button>
+    <button data-act="export-enc">🔐 پشتیبان رمزگذاری‌شده</button>
+    <button data-act="export-csv">📄 خروجی CSV پروژه‌ها</button>
+    <button data-act="import">⬆️ ورود فایل پشتیبان</button>
+    <button data-act="recycle">🗑 سطل بازیافت</button>
+    <button data-act="health">❤ سلامت سیستم</button>
+    <button data-act="review">📅 مرور هفتگی</button>
+    <button data-act="assist">💡 دستیار محلی</button>
+    <button data-act="knowledge">📚 کتابخانه دانش</button>
+    <button data-act="subtitle">✏️ متن زیرعنوان</button>
+    <button data-act="reset-samples">♻️ بازنشانی کامل به نسخه نمونه</button>
+    <button data-act="clear-samples">🧹 حذف آیتم‌های نمونه</button>
+    <input type="file" id="import-file" accept="application/json" hidden>
+  </div>
+</div>
+
+<main id="view"></main>
+
+<div id="toast-wrap"></div>
+<div id="modal-root"></div>
+<div id="warp" aria-hidden="true"></div>
+
+<button id="rocket" class="hidden" title="برگشت به بالا" aria-label="برگشت به بالا">
+  <span class="rk-body">
+    <svg viewBox="0 0 64 64"><defs><linearGradient id="rkG" x1="0" x2="1"><stop offset="0" stop-color="#cfd8ff"/><stop offset=".5" stop-color="#ffffff"/><stop offset="1" stop-color="#9fb0e8"/></linearGradient></defs>
+      <path d="M32 4c9 7 13 18 13 30l-5 9H24l-5-9C19 22 23 11 32 4Z" fill="url(#rkG)" stroke="#1b2a66" stroke-width="2"/>
+      <circle cx="32" cy="24" r="6" fill="#2f7bff" stroke="#0b1640" stroke-width="2"/>
+      <path d="M19 34l-8 10 1 7 10-6M45 34l8 10-1 7-10-6" fill="#ff2e4d" stroke="#5a0a17" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M26 45h12l-2 6h-8z" fill="#3b4a80"/></svg>
+  </span>
+  <span class="rk-flame"></span>
+</button>
+
+<!-- AI logo sprite (approximate brand monograms) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gGem" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1fa2ff"/><stop offset=".55" stop-color="#4f6bff"/><stop offset="1" stop-color="#b06cff"/>
+    </linearGradient>
+    <linearGradient id="gGpt" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f3e9ff"/><stop offset="1" stop-color="#c9a6ff"/>
+    </linearGradient>
+    <linearGradient id="gGrok" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#9fb6ff"/>
+    </linearGradient>
+    <linearGradient id="gClaude" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffd2b3"/><stop offset=".5" stop-color="#ff8a3d"/><stop offset="1" stop-color="#e0552b"/>
+    </linearGradient>
+    <symbol id="sym-chatgpt" viewBox="0 0 48 48">
+      <g fill="none" stroke="url(#gGpt)" stroke-width="3.4" stroke-linejoin="round">
+        <g id="gptPetal"><path d="M24 9.5c4.6 0 8.3 3.7 8.3 8.3v9.6l-8.3 4.8"/></g>
+        <use href="#gptPetal" transform="rotate(60 24 24)"/>
+        <use href="#gptPetal" transform="rotate(120 24 24)"/>
+        <use href="#gptPetal" transform="rotate(180 24 24)"/>
+        <use href="#gptPetal" transform="rotate(240 24 24)"/>
+        <use href="#gptPetal" transform="rotate(300 24 24)"/>
+      </g>
+    </symbol>
+    <symbol id="sym-gemini" viewBox="0 0 48 48">
+      <path d="M24 4c1.2 10.6 9.4 18.8 20 20-10.6 1.2-18.8 9.4-20 20-1.2-10.6-9.4-18.8-20-20C14.6 22.8 22.8 14.6 24 4Z" fill="url(#gGem)"/>
+    </symbol>
+    <symbol id="sym-grok" viewBox="0 0 48 48">
+      <g fill="none" stroke="url(#gGrok)" stroke-width="3.6" stroke-linecap="round">
+        <path d="M33.5 14.5A13.5 13.5 0 1 0 36 31"/>
+        <path d="M23 29.5 38.5 8.5"/>
+        <path d="M17.5 36 40 13"/>
+      </g>
+    </symbol>
+    <symbol id="sym-manus" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="20" fill="#f4f1ea"/>
+      <path fill="none" stroke="#111" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M16 30v-11M20 32V12M24 32V11M28 30V14M32 28v-8"/>
+    </symbol>
+    <symbol id="sym-claude" viewBox="0 0 48 48">
+      <g fill="url(#gClaude)">
+        <g id="clRay"><rect x="22.2" y="5" width="3.6" height="17" rx="1.8"/></g>
+        <use href="#clRay" transform="rotate(30 24 24)"/><use href="#clRay" transform="rotate(60 24 24)"/>
+        <use href="#clRay" transform="rotate(90 24 24)"/><use href="#clRay" transform="rotate(120 24 24)"/>
+        <use href="#clRay" transform="rotate(150 24 24)"/><use href="#clRay" transform="rotate(180 24 24)"/>
+        <use href="#clRay" transform="rotate(210 24 24)"/><use href="#clRay" transform="rotate(240 24 24)"/>
+        <use href="#clRay" transform="rotate(270 24 24)"/><use href="#clRay" transform="rotate(300 24 24)"/>
+        <use href="#clRay" transform="rotate(330 24 24)"/>
+        <circle cx="24" cy="24" r="4.2"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<script src="assets/js/sound.js"></script>
+<script src="assets/js/sky.js"></script>
+<script src="assets/music-data.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/lib/chart.umd.js"></script>
+<script src="assets/js/finance-seed.js"></script>
+<script src="assets/js/finance.js"></script>
+<script src="assets/js/daily.js"></script>
+<script src="assets/js/agents.js"></script>
+<script src="assets/js/crew-orbit.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/extras.js"></script>
+<script src="assets/js/offline.js"></script>
+<!--PWA--><script>if (/^https?:$/.test(location.protocol) && 'serviceWorker' in navigator) window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function (e) { console.warn('sw', e); }); });</script><!--/PWA-->
+</body>
+</html>
